@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabase';
+import { AtSign, Lock, UserPlus, KeyRound, ShieldCheck } from 'lucide-react';
 
 type AuthMode = 'login' | 'register' | 'reset';
 
@@ -19,10 +20,48 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const validatePassword = (password: string): boolean => {
-    // Mínimo 8 caracteres, al menos una letra mayúscula, una minúscula y un número
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    return regex.test(password);
+  const validatePassword = (password: string): { isValid: boolean; message?: string } => {
+    if (password.length < 8) {
+      return { 
+        isValid: false, 
+        message: "La contraseña debe tener al menos 8 caracteres" 
+      };
+    }
+
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasUppercase) {
+      return { 
+        isValid: false, 
+        message: "Debe contener al menos una letra mayúscula" 
+      };
+    }
+
+    if (!hasLowercase) {
+      return { 
+        isValid: false, 
+        message: "Debe contener al menos una letra minúscula" 
+      };
+    }
+
+    if (!hasNumber) {
+      return { 
+        isValid: false, 
+        message: "Debe contener al menos un número" 
+      };
+    }
+
+    if (!hasSpecialChar) {
+      return { 
+        isValid: false, 
+        message: "Debe contener al menos un carácter especial" 
+      };
+    }
+
+    return { isValid: true };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,21 +70,37 @@ export default function AuthForm() {
 
     try {
       if (mode === 'register') {
-        if (password !== confirmPassword) {
+        // Username validation
+        if (!username) {
           toast({
-            title: "Error",
-            description: "Las contraseñas no coinciden",
+            title: "Error de Registro",
+            description: "El nombre de usuario es obligatorio",
             variant: "destructive",
           });
+          setLoading(false);
           return;
         }
 
-        if (!validatePassword(password)) {
+        // Password validation for registration
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
           toast({
-            title: "Contraseña débil",
-            description: "La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula y un número",
+            title: "Contraseña Débil",
+            description: passwordValidation.message,
             variant: "destructive",
           });
+          setLoading(false);
+          return;
+        }
+
+        // Password confirmation
+        if (password !== confirmPassword) {
+          toast({
+            title: "Error de Registro",
+            description: "Las contraseñas no coinciden",
+            variant: "destructive",
+          });
+          setLoading(false);
           return;
         }
 
@@ -62,7 +117,7 @@ export default function AuthForm() {
         if (error) throw error;
 
         toast({
-          title: "Registro exitoso",
+          title: "Registro Exitoso",
           description: "Por favor revisa tu correo para confirmar tu cuenta.",
         });
         
@@ -75,7 +130,7 @@ export default function AuthForm() {
         if (error) throw error;
 
         toast({
-          title: "Inicio de sesión exitoso",
+          title: "Inicio de Sesión Exitoso",
           description: "Bienvenido de nuevo.",
         });
         
@@ -87,7 +142,7 @@ export default function AuthForm() {
         if (error) throw error;
 
         toast({
-          title: "Correo enviado",
+          title: "Correo Enviado",
           description: "Revisa tu correo para restablecer tu contraseña.",
         });
         setMode('login');
@@ -107,7 +162,10 @@ export default function AuthForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl text-center">
+        <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
+          {mode === 'login' && <Lock className="text-primary" />}
+          {mode === 'register' && <UserPlus className="text-primary" />}
+          {mode === 'reset' && <KeyRound className="text-primary" />}
           {mode === 'login' ? 'Iniciar Sesión' : 
            mode === 'register' ? 'Crear Cuenta' : 
            'Recuperar Contraseña'}
@@ -123,58 +181,70 @@ export default function AuthForm() {
           {mode === 'register' && (
             <div className="mb-4">
               <Label htmlFor="username">Nombre de usuario</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                placeholder="Ingresa tu nombre de usuario"
-                className="mt-1"
-              />
+              <div className="flex items-center">
+                <UserPlus className="mr-2 text-muted-foreground" />
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  placeholder="Ingresa tu nombre de usuario"
+                  className="mt-1"
+                />
+              </div>
             </div>
           )}
           
           <div className="mb-4">
             <Label htmlFor="email">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="ejemplo@correo.com"
-              className="mt-1"
-            />
+            <div className="flex items-center">
+              <AtSign className="mr-2 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="ejemplo@correo.com"
+                className="mt-1"
+              />
+            </div>
           </div>
           
           {mode !== 'reset' && (
             <div className="mb-4">
               <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="mt-1"
-              />
+              <div className="flex items-center">
+                <Lock className="mr-2 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="mt-1"
+                />
+              </div>
             </div>
           )}
           
           {mode === 'register' && (
             <div className="mb-4">
               <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="mt-1"
-              />
+              <div className="flex items-center">
+                <ShieldCheck className="mr-2 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="mt-1"
+                />
+              </div>
             </div>
           )}
           
