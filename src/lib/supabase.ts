@@ -1,34 +1,15 @@
 
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 
-// Supabase URL y anon key (reemplazar con valores reales en producción)
-const supabaseUrl = 'https://your-supabase-project-url.supabase.co';
-const supabaseAnonKey = 'your-supabase-anon-key';
+// Supabase URL y anon key from our project
+const supabaseUrl = 'https://ofxyumqneangphbdvzim.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9meHl1bXFuZWFuZ3BoYmR2emltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5NjcxMzcsImV4cCI6MjA2MDU0MzEzN30.hhGWYtzMtr5MjjaG0vgcs2vDL3ZBWYV9R4RrNPt-Nio';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
-// Tipos para la base de datos
-export type User = {
-  id: string;
-  username: string;
-  email: string;
-  created_at: string;
-  status: 'active' | 'pending' | 'blocked';
-  is_admin: boolean;
-};
-
-export type Chat = {
-  id: string;
-  user_id: string;
-  title: string;
-  created_at: string;
-  last_updated: string;
-};
-
-export type Message = {
-  id: string;
-  chat_id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  created_at: string;
-};
+// Types for the database are now imported from @/integrations/supabase/types
+// These are just additional type definitions for convenience
+export type User = Database['public']['Tables']['users']['Row'];
+export type Chat = Database['public']['Tables']['chats']['Row'];
+export type Message = Database['public']['Tables']['messages']['Row'];

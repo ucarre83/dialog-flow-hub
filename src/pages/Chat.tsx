@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Chat as ChatType, supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import ChatInterface from '@/components/chat/ChatInterface';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import { useToast } from '@/hooks/use-toast';

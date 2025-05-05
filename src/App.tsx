@@ -9,7 +9,7 @@ import Chat from "./pages/Chat";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { useEffect, useState } from "react";
-import { supabase } from "./lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
