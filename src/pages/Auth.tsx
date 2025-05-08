@@ -3,11 +3,15 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthForm from '@/components/auth/AuthForm';
 import { supabase } from '@/integrations/supabase/client';
+import { cleanupAuthState } from '@/utils/authUtils';
 
 export default function Auth() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Clean up any auth state to prevent limbo states
+    cleanupAuthState();
+    
     // Verificar si el usuario ya está autenticado
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();

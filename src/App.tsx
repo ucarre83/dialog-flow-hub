@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { cleanupAuthState } from "@/utils/authUtils";
 
 const queryClient = new QueryClient();
 
@@ -17,18 +19,29 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Verificar el estado de autenticación al cargar la aplicación
+    // Set up auth state listener FIRST to avoid missing events
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
+      setIsAuthenticated(!!session);
+      
+      // Handle sign out event specifically
+      if (event === 'SIGNED_OUT') {
+        cleanupAuthState();
+      }
+    });
+
+    // THEN check for existing session
     const checkAuth = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      setIsAuthenticated(!!data.session);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        setIsAuthenticated(!!data.session);
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        setIsAuthenticated(false);
+      }
     };
 
     checkAuth();
-
-    // Suscribirse a cambios en el estado de autenticación
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
 
     return () => {
       data.subscription.unsubscribe();

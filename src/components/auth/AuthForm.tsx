@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { AtSign, Lock, UserPlus, KeyRound, ShieldCheck } from 'lucide-react';
+import { cleanupAuthState } from '@/utils/authUtils';
 
 type AuthMode = 'login' | 'register' | 'reset';
 
@@ -69,6 +70,17 @@ export default function AuthForm() {
     setLoading(true);
 
     try {
+      // Clean up any existing auth state first to prevent issues
+      cleanupAuthState();
+      
+      // Try to sign out globally to ensure clean state
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+        console.error("Error during global signout:", err);
+      }
+
       if (mode === 'register') {
         // Username validation
         if (!username) {
@@ -121,6 +133,9 @@ export default function AuthForm() {
           description: "Por favor revisa tu correo para confirmar tu cuenta.",
         });
         
+        // Force page reload for a clean state
+        window.location.href = '/';
+        
       } else if (mode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -133,6 +148,9 @@ export default function AuthForm() {
           title: "Inicio de Sesión Exitoso",
           description: "Bienvenido de nuevo.",
         });
+        
+        // Force page reload for a clean state
+        window.location.href = '/';
         
       } else if (mode === 'reset') {
         const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
