@@ -231,7 +231,12 @@ export default function Admin() {
     setEditUser(user);
     setEditUsername(user.username);
     setEditEmail(user.email);
-    setEditStatus(user.status);
+    // Fix type issue by ensuring we only set valid status values
+    setEditStatus(
+      user.status === 'active' || user.status === 'pending' || user.status === 'blocked' 
+        ? user.status 
+        : 'active'
+    );
     setEditIsAdmin(user.is_admin);
     setShowEditDialog(true);
   };

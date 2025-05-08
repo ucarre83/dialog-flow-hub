@@ -1,4 +1,3 @@
-
 import { useRef, useState, useEffect } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -70,6 +69,7 @@ export default function ChatInterface({ chatId, userId, apiKey }: ChatInterfaceP
       content: userMessage,
       role: 'user',
       created_at: new Date().toISOString(),
+      user_id: userId // Adding the missing user_id property
     };
     
     setMessages(prev => [...prev, userMessageObj]);
@@ -103,6 +103,7 @@ export default function ChatInterface({ chatId, userId, apiKey }: ChatInterfaceP
         content: 'Pensando...',
         role: 'assistant',
         created_at: new Date().toISOString(),
+        user_id: userId // Adding the missing user_id property
       };
       
       setMessages(prev => [...prev, tempAssistantMessage]);
